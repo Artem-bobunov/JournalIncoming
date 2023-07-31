@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block container %}
+<style>
+td {
+text-align:left;
+}
+</style>
+<form  method="post">
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title">Подробная информация журнала входящих</h5>
+    </div>
+    <div class="card-body">
+            {% csrf_token %}
+<table class="table table-bordered table-sm table-hover">
+
+  <tbody>
+    <tr>
+      <th> Регистрационный номер</th>
+      <td>{{details.reg}}</td>
+    </tr>
+    <tr>
+      <th> Дата поступления</th>
+      <td>{{details.dateInput}}</td>
+    </tr>
+    <tr>
+      <th> От кого</th>
+      <td>{{details.otKogo}}</td>
+    </tr>
+    <tr>
+      <th>Входящий номер</th>
+      <td>{{details.vxnumber}}</td>
+    </tr>
+    <tr>
+      <th>Исходящий номер</th>
+      <td>{{details.isxnumber}}</td>
+    </tr>
+    <tr>
+      <th>Краткое содеражние</th>
+      <td>{{details.summary}}</td>
+    </tr>
+    <tr>
+      <th>Исполнитель</th>
+      <td>{{details.executor}}</td>
+    </tr>
+    <tr>
+      <th>Отметка об исполнении</th>
+      <td>{{details.perfomance}}</td>
+    </tr>
+    <tr>
+      <th>Признак контроля</th>
+      <td>{{details.control}}</td>
+    </tr>
+
+    <tr>
+      <th>Ответ на письмо</th>
+      <td>{{details.answertMail}}</td>
+    </tr>
+    <tr>
+      <th>Примечание</th>
+      <td>{{details.note}}</td>
+    </tr>
+    <tr>
+      <th>Номенклатурное дело</th>
+      <td>{{details.nd}}</td>
+    </tr>
+  </tbody>
+</table>
+
+  <center><a class="btn btn-warning" href="{%url 'update' details.id %}">Редактировать</a ></center>
+    </div>
+    </div>
+</form>
+{% endblock %}

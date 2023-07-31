@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block container %}
+{% if user.is_authenticated %}
+
+<style>
+ th,tr {
+ text-align: center;
+ vertical-align: inherit;
+ text-indent:initial;
+ }
+tr.pointer {
+      cursor: pointer;
+      }
+</style>
+
+<div class="container">
+  <div class="row">
+    <div class="col-2">
+                <a class=" btn btn-outline-primary" type="submit" name="back" value="Сброс" href = "{% url 'list' %}" >Очистить запрос</a>
+    </div>
+
+    <div class="col-sm">
+        <form class="form-inline" action="{% url 'search' %}" method="get">
+			<div class="input-group mb-3" >
+			  <input type="text" class="form-control" placeholder="Введите запрос" aria-label="Введите запросe" name="q">
+			  <button class="btn btn-outline-primary" type="submit">Поиск</button>
+			</div>
+        </form></div>
+  </div>
+</div>
+
+
+<form  method="post" action="{% url 'filter' %}" >
+    {% csrf_token %}
+<!--<input class="btn btn-success" type="submit" value="Поиск">-->
+
+    <table class="table table-bordered table-hover">
+      <thead class="thead-light">
+        <tr  >
+          <th>Рег №</th>
+          <th>
+              <div class="dropdown">
+                  <button class="btn btn-outline-primary dropdown-toggle"
+                          type="button" id="dropdownMenu1" data-bs-toggle="dropdown"
+                          aria-haspopup="true" aria-expanded="false">
+                    <b>Дата поступления</b>
+                  </button>
+                  <div class="dropdown-menu" >
+                       <center><p>Укажите месяц:
+                       <input type="date" name="calendar" class="form-control">
+                        <input class="btn btn-success btn-sm mt-2" type="submit" value="Найти">
+                      </p></center>
+                      <!--{% for d in di%}
+                    <a class="dropdown-item" href="#!">{{d.dateInput}}</a>
+
+                      {% endfor %}<li><a class="dropdown-item" name="users" href="#">А.А. Бакулин</a></li>
+                    <li><a class="dropdown-item" name="users" href="#">Ю.А. Деточенко</a></li>
+                    <li><a class="dropdown-item" name="users" href="#">С.К. Меликян</a></li>
+                    <li><a class="dropdown-item" name="users" href="#">О.Ю. Кошелева</a></li>
+                    <li><a class="dropdown-item" name="users" href="#">А.В. Бобунов</a></li>-->
+                  </div>
+              </div>
+          </th>
+          <th> Входящий Номер
+          </th>
+          <th>Исходящий номер
+          </th>
+          <th>Краткое содержание</th>
+          <th>Исполнитель
+			  </th>
+          <th>Отметка об исполнении</th>
+        </tr>
+      </thead>
+      <tbody  href = "{% url 'list' %}">
+          {% for i in pages%}
+          <tr class="pointer" onclick="document.location = '{% url 'detail' i.pk %}';">
+          <th scope="row">{{i.reg}}</th>
+          <td>{{i.dateInput}}</td>
+
+          <td>{{i.vxnumber}}</td>
+          <td>{{i.isxnumber}}</td>
+          <td>{{i.summary}}</td>
+          <td>{{i.executor}}</td>
+          <td>{{i.perfomance}}</td>
+          </tr>
+          {% endfor %}
+          {% for i in pages0%}
+          <tr class="pointer"  id = "{{i.id}}" onclick="document.location = '{% url 'detail' i.pk %}';">
+
+          <th scope="row">{{i.reg}}</th>
+          <td>{{i.dateInput}}</td>
+
+          <td>{{i.vxnumber}}</td>
+          <td>{{i.isxnumber}}</td>
+          <td>{{i.summary}}</td>
+          <td>{{i.executor}}</td>
+          <td>{{i.perfomance}}</td>
+          </tr>
+          {% endfor %}
+          {% for i in pages1%}
+          <tr class="pointer" onclick="document.location = '{% url 'detail' i.pk %}';">
+          <th scope="row">{{i.reg}}</th>
+          <td>{{i.dateInput}}</td>
+
+          <td>{{i.vxnumber}}</td>
+          <td>{{i.isxnumber}}</td>
+          <td>{{i.summary}}</td>
+          <td>{{i.executor}}</td>
+          <td>{{i.perfomance}}</td>
+          </tr>
+          {% endfor %}
+
+
+
+      </tbody>
+    </table>
+</form>
+<center><div class="row">
+  <div class="col-9">
+  {% if pages %}
+      {% include 'pagination.html' with page=pages  %}
+  {% elif pages1 %}
+      {% include 'pagination.html' with page=pages1  %}
+  {% elif pages0 %}
+      {% include 'pagination.html' with page=pages0  %}
+  {% endif %}
+  </div></center>
+    
+
+
+{% endif %}
+
+{% endblock %}

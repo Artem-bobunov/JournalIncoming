@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block container %}
+<style>
+    .CE1 {
+    width: 300px;
+    height: 200px;
+}
+</style>
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title">Изменить журнал входящих</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" >
+            {% csrf_token %}
+            <ul class="list-group" >
+              <li class="list-group-item"><h6>Дата поступления</h6> {{form.dateInput}}</li>
+              <li class="list-group-item"><h6>От кого</h6> {{form.otKogo}}</li>
+              <li class="list-group-item"><h6>Входящий номер</h6> {{form.vxnumber}}</li>
+              <li class="list-group-item"><h6>Исходящий номер</h6>{{form.isxnumber}}</li>
+              <li class="list-group-item"><h6>Краткое содеражние</h6>{{form.summary}}</li>
+
+              <li class="list-group-item"><h6>Исполнитель</h6>{{form.executor}}</li>
+              <li class="list-group-item"><h6>Отметка об исполнении</h6>{{form.perfomance}}</li>
+              <li class="list-group-item"><h6>Признак контроля</h6>{{form.control}}</li>
+              <li class="list-group-item"><h6>Ответ на письмо</h6>{{form.answertMail}}</li>
+              <li class="list-group-item"><h6>Примечание</h6>{{form.note}}</li>
+
+              <li class="list-group-item"><h6>Номенклатурное дело</h6>{{form.nd}}</li>
+
+            </ul>
+            <button type="submit" class="btn btn-success">Сохранить</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

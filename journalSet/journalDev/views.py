@@ -1,0 +1,151 @@
+import csv
+from functools import reduce
+import operator
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.http import HttpResponse
+from django.shortcuts import render, redirect
+from .models import Journal
+from django.views.decorators.csrf import csrf_protect
+from django.db.models import Q
+from .forms import restSerializer
+from .logger import LoggerPasport
+
+BLOG_POSTS_PER_PAGE = 10
+# Create your views here.
+@csrf_protect
+def listJournal(request):
+    list = Journal.objects.all().order_by('-id')
+    paginator = Paginator(list, BLOG_POSTS_PER_PAGE)
+    page_number = request.GET.get('page')
+    try:
+        pages0 = paginator.page(page_number)
+    except PageNotAnInteger:
+        pages0 = paginator.page(1)
+    except EmptyPage:
+        pages0 = paginator.page(paginator.num_pages)
+
+    return render(request,'list.html', context={'list':list,'pages0':pages0})
+
+def searchList(request):
+    query_dict = request.GET
+    query  = query_dict.get("q")
+    list_object = None
+    if query is not None:
+        list = Journal.objects.filter(Q(vxnumber__icontains=query) |
+                                      Q(isxnumber__icontains=query) |
+                                      Q(summary__icontains=query))
+    paginator = Paginator(list, BLOG_POSTS_PER_PAGE)
+    page_number = request.GET.get('page')
+    try:
+        pages1 = paginator.page(page_number)
+    except PageNotAnInteger:
+        pages1 = paginator.page(1)
+    except EmptyPage:
+        pages1 = paginator.page(paginator.num_pages)
+    context = {"list": list,'pages1':pages1}
+    return render(request, 'list.html', context=context)
+
+def FilterList(request):
+    list_object = None
+    list = None
+    if request.method == "POST":
+        print('good')
+        date = request.POST.get('calendar')
+        #vxn = request.POST.get('vxnumber')
+        #isxn = request.POST.get('isxnumber')
+        query_dict = request.GET
+        query = query_dict.get("q")
+
+        if query is not None:
+            list = Journal.objects.filter(Q(vxnumber__icontains=query) |
+                                                 Q(isxnumber__icontains=query) |
+                                                 Q(summary__icontains=query)|
+                                                 Q(executor__icontains=query)|
+                                                 Q(perfomance__icontains=query))
+        filter_kwargs = {
+            'dateInput': date or None,
+            'dateInput': date or None,
+        }
+        list_of_Q = [Q(**{key: val}) for key, val in filter_kwargs.items()]
+        list = Journal.objects.filter(reduce(operator.or_, list_of_Q))
+        paginator = Paginator(list, BLOG_POSTS_PER_PAGE)
+        page_number = request.GET.get('page')
+        try:
+            pages = paginator.page(page_number)
+        except PageNotAnInteger:
+            pages = paginator.page(1)
+        except EmptyPage:
+            pages = paginator.page(paginator.num_pages)
+
+    return render(request, 'list.html', context={'list': list,"list_object": list_object,'pages':pages})
+
+
+def exportCSV(GET, queryset):
+    pass
+
+
+def exportcsv(request):
+    obj = Journal.objects.all()
+    # id_build = Building.objects.latest('id').id
+    # print(id_build)
+    myFilter = exportCSV(request.GET, queryset=obj)
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="file.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Рег №','Дата поступления','От ког','вх.№','исх.№','Краткое содеражние','исполнитель','Отметка об исполнении',
+                     'Признак контроля','Ответ на письмо','Примечание','НД'])
+
+    for e in obj.values_list('reg', 'dateInput', 'otKogo', 'vxnumber','isxnumber','summary',
+                             'executor','perfomance','control','answertMail','note','nd'):
+        writer.writerow(e)
+    return response
+
+def Detail(request, id):
+    request.session['return_path'] = request.META.get('HTTP_REFERER', '/')
+
+    detail = None
+    if request.method == "GET":
+        try:
+            detail = Journal.objects.get(id=id)
+        except:
+            print("Не удалось просмотреть детали")
+    return render(request, 'detail.html', {'details': detail})
+
+def Create(request):
+    ls_id = Journal.objects.last().id
+    form = restSerializer(request.POST or None)
+    if form.is_valid():
+        try:
+            instance =form.save()
+            instance.reg = int(ls_id) + 1
+            instance.save()
+            log = LoggerPasport(request.user, int(ls_id) + 1)
+            log.add_record()
+            return redirect('/')
+        except Exception as e:
+            print(e)
+    else:
+        form = restSerializer()
+    return render(request, 'create.html', {'form': form})
+
+def Update (request,id):
+
+    journal = Journal.objects.get(id=id)
+    form = restSerializer(instance=journal)
+    if request.method == 'POST':
+        form = restSerializer(request.POST or None,instance = journal)
+        if form.is_valid():
+            try:
+                #form.save()
+                instance = form.save()
+                instance.reg = int(id)
+                instance.save()
+                log = LoggerPasport(request.user, journal.id)
+                log.update_record()
+                return redirect(request.session['return_path'])
+            except Exception as e:
+                print(e)
+        else:
+            form = restSerializer(instance=journal)
+    return render(request, 'update.html', {'form': form})
+
